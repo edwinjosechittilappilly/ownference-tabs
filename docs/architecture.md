@@ -1,18 +1,18 @@
 # Architecture and permissions
 
-Ownference Tabs is a Chrome MV3 extension with extension-owned setup and popup documents. No background inference listener or website messaging endpoint exists.
+Ownference Tabs is a Chrome MV3 extension with extension-owned setup and popup documents, plus an explicitly enabled browser relay for cooperating websites.
 
 ## Flow
 
 Toolbar invocation grants temporary activeTab access. The user then clicks Read selection / page. `chrome.scripting.executeScript` reads selected text or visible document text and returns an explicit password refusal when appropriate. The popup shows origin, title, truncation status and editable text. Only Generate sends the displayed text through the local bridge to the selected model. Results are text-only and can be copied or downloaded, not auto-inserted or sent.
 
-`src/options.js` owns setup and session token storage. `src/popup.js` owns capture, preview and operation lifecycle. `src/client.js` owns the bounded streaming client. `scripts/package.js` stages a sorted explicit allowlist, strips the unpacked manifest public key, normalizes timestamps/modes and verifies two identical zip builds.
+`src/options.js` owns setup and session token storage. `src/popup.js` owns capture, preview and operation lifecycle. `src/client.js` owns the bounded streaming client. The relay content script and service worker forward approved requests to the native host; see browser-relay-plan.md. `scripts/package.js` stages a sorted explicit allowlist, strips the unpacked manifest public key, normalizes timestamps/modes and verifies two identical zip builds.
 
 ## Permission and privacy decisions
 
-Permissions are activeTab, scripting and storage, with a single local-host bridge permission. No all-sites permission, automatic page observation, page-origin inference messages or clipboard read. The token stays in chrome.storage.session with default extension-only access, not sync storage. A site cannot call the extension to generate or read its token.
+Permissions are activeTab, scripting, storage and nativeMessaging, with a single local-host bridge permission. There is no all-sites permission, automatic page observation or clipboard read. The popup token stays in chrome.storage.session with default extension-only access, not sync storage. Relay sites do not receive the native host's bridge credential; only a tab explicitly enabled by the user can send relay requests.
 
-Password values are never captured. Body text may still contain private account information; users must inspect the preview. The popup is ephemeral; closing it interrupts generation. Local inference does not make model output trustworthy or prevent copied text from reaching websites. The browser relay in browser-relay-plan.md is planning only, not an active permission expansion.
+Password values are never captured. Body text may still contain private account information; users must inspect the preview. The popup is ephemeral; closing it interrupts popup generation. Local inference does not make model output trustworthy or prevent copied text or relay results from reaching websites.
 
 ## Distribution
 

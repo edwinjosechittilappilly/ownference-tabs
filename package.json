@@ -1,17 +1,30 @@
 {
   "name": "@ownference/tabs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=24"
   },
   "license": "Apache-2.0",
+  "bin": {
+    "ownference-tabs": "./scripts/cli.js"
+  },
+  "files": [
+    "NOTICE",
+    "manifest.json",
+    "options.html",
+    "popup.html",
+    "src/",
+    "docs/assets/icon-*.png",
+    "scripts/cli.js",
+    "scripts/extension-files.js"
+  ],
   "scripts": {
     "lint": "eslint .",
     "secrets": "secretlint '**/*'",
     "check": "npm run lint && npm run secrets && npm test",
-    "test": "node --test --experimental-test-coverage --test-coverage-include='src/**/*.js' --test-coverage-lines=85 --test-coverage-branches=70 --test-coverage-functions=70 tests/client.test.js",
+    "test": "node --test --experimental-test-coverage --test-coverage-include='src/**/*.js' --test-coverage-lines=85 --test-coverage-branches=70 --test-coverage-functions=70 tests/*.test.js",
     "e2e": "node tests/live-e2e.js",
     "fixture": "node fixture/server.js",
     "package": "node scripts/package.js"

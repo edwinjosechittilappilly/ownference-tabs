@@ -1,6 +1,11 @@
 const $ = id => document.getElementById(id);
 const origin = `chrome-extension://${chrome.runtime.id}`;
 $('command').textContent = `ownference grant --origin ${origin}`;
+$('native-command').textContent = `ownference native install --extension-id ${chrome.runtime.id}`;
+$('copy-native-command').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('native-command').textContent); $('native-copy-status').textContent = 'Install command copied.'; }
+  catch { $('native-copy-status').textContent = 'Select and copy the install command above.'; }
+});
 $('copy-command').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('command').textContent); $('status').textContent = 'Command copied.'; }
   catch { $('status').textContent = 'Select and copy the command above.'; }
