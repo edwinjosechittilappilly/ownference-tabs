@@ -1,0 +1,35 @@
+{
+  "name": "@ownference/tabs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "lint": "eslint .",
+    "secrets": "secretlint '**/*'",
+    "check": "npm run lint && npm run secrets && npm test",
+    "test": "node --test --experimental-test-coverage --test-coverage-include='src/**/*.js' --test-coverage-lines=85 --test-coverage-branches=70 --test-coverage-functions=70 tests/client.test.js",
+    "e2e": "node tests/live-e2e.js",
+    "fixture": "node fixture/server.js",
+    "package": "node scripts/package.js"
+  },
+  "overrides": {
+    "@eslint/config-array": {
+      "minimatch": "11.0.1"
+    },
+    "eslint": {
+      "minimatch": "11.0.1"
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@secretlint/secretlint-rule-preset-recommend": "13.1.0",
+    "eslint": "10.14.0",
+    "globals": "17.14.0",
+    "playwright": "^1.56.1",
+    "secretlint": "13.1.0"
+  }
+}
