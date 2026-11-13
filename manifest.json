@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ownference Tabs",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Turn selected page text into answers, locally.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoCXfo7Yv9llRpxWio5Pg2ohEbk9ogmNob/I3N5BVoumgg72RRB0B46LI4xVVyziuJZXfoxtI7m7pHk+T2KnwZNXjMU6b6vHDijXgVXILMpu6zBIjIMOnaEQoqZHn9rLu3ZWdIVkQt1c9vAgB7QXpU6p9IE3VSjUT1vlSzbTLB74CyWTy+s+9Ja7/hj57GDt8H4364R0NsyedmlFbzcsw/T7LeJv/mxuhMfNzbBZL4zxKhnXMAEO7AmU1BmKKu3MPwbaqf9xFzcCylj5Ncn7bE9N+KK8P+WbU7auOgM38jGtdqQqV/XKVEMzf4IzEIWVz/QlM1QjooctnqdCi9l7uQQIDAQAB",
   "permissions": ["activeTab", "scripting", "storage", "nativeMessaging"],

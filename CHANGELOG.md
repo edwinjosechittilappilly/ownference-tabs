@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Correct Chrome's installed manifest version to match the release package, allowing Chrome to recognize the current extension version.
+- Add a durable-install regression test for the Chrome update version contract.
+
 ## 0.2.0
 
 - Document-scoped browser relay, extension-owned approval, native messaging and strict frame/origin isolation.

@@ -26,12 +26,12 @@ No background scraping of every tab. No silent cloud fallback. No claim to repla
 Requires Chrome, Node 24+, GitHub CLI with access to this private repository, and the running [Ownference bridge](https://github.com/edwinjosechittilappilly/ownference). The bridge can use a downloaded Ollama generation model or another ready local provider.
 
 ```sh
-gh release download v0.2.0 \
+gh release download v0.2.1 \
   --repo edwinjosechittilappilly/ownference-tabs \
-  --pattern ownference-tabs-0.2.0.tgz
+  --pattern ownference-tabs-0.2.1.tgz
 
 # Copies the extension out of the temporary npx cache:
-npx --yes --package "$PWD/ownference-tabs-0.2.0.tgz" \
+npx --yes --package "$PWD/ownference-tabs-0.2.1.tgz" \
   ownference-tabs install --directory "$HOME/Applications/OwnferenceTabs"
 ```
 
@@ -40,7 +40,7 @@ The target directory must be empty. Open **chrome://extensions**, enable Develop
 Prefer a durable CLI?
 
 ```sh
-npm install -g ./ownference-tabs-0.2.0.tgz
+npm install -g ./ownference-tabs-0.2.1.tgz
 ownference-tabs path
 ```
 
