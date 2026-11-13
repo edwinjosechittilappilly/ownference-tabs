@@ -86,7 +86,7 @@ chrome.tabs.onUpdated.addListener((tabId, change) => { if (change.status === 'lo
 chrome.tabs.onRemoved.addListener(tabId => { void initialized.then(() => grants[tabId] && revoke(tabId)).catch(() => {}); });
 
 chrome.runtime.onConnect.addListener(port => {
-  if (port.name !== 'ownference-relay-v1') return;
+  if (port.name !== 'ownmode-relay-v1') return;
   let disconnected = false;
   port.onDisconnect.addListener(() => { disconnected = true; });
   void initialized.then(() => {
@@ -97,19 +97,19 @@ chrome.runtime.onConnect.addListener(port => {
   let origin;
   try { origin = new URL(sender.url).origin; } catch { /* deny */ }
   if (!grant || sender.frameId !== 0 || !sender.documentId || sender.documentId !== grant.documentId || origin !== grant.origin || sender.origin !== grant.origin) {
-    port.postMessage({ type: 'error', error: fail('permission_denied', 'Enable relay for this tab in Ownference Tabs first.') });
+    port.postMessage({ type: 'error', error: fail('permission_denied', 'Enable relay for this tab in OwnMode Browser first.') });
     port.disconnect();
     return;
   }
   let native;
-  try { native = chrome.runtime.connectNative('com.ownference.bridge'); } catch {
-    port.postMessage({ type: 'error', error: fail('native_unavailable', 'Open Ownference Tabs Setup to install the native host, then start the bridge.') });
+  try { native = chrome.runtime.connectNative('com.ownmode.bridge'); } catch {
+    port.postMessage({ type: 'error', error: fail('native_unavailable', 'Open OwnMode Browser Setup to install the native host, then start the bridge.') });
     port.disconnect();
     return;
   }
   const client = { port, native, tabId, origin, pending: new Map(), seen: new Set(), closed: false };
   clients.add(client);
-  native.onDisconnect.addListener(() => closeClient(client, fail('native_unavailable', 'Native host disconnected. Open Ownference Tabs Setup to install the native host and start the bridge.')));
+  native.onDisconnect.addListener(() => closeClient(client, fail('native_unavailable', 'Native host disconnected. Open OwnMode Browser Setup to install the native host and start the bridge.')));
   native.onMessage.addListener(message => {
     if (message?.v !== 1 || !client.pending.has(message.id)) return;
     if (!['models', 'delta', 'done', 'error'].includes(message.event)) return;
@@ -125,7 +125,7 @@ chrome.runtime.onConnect.addListener(port => {
     if (client.closed || !message || typeof message.id !== 'string' || message.id.length < 1 || message.id.length > 128) return;
     if (message.op === 'cancel') {
       if (typeof message.target === 'string' && client.pending.has(message.target)) {
-        try { native.postMessage({ v: 1, id: crypto.randomUUID(), op: 'cancel', target: message.target }); } catch { closeClient(client, fail('native_unavailable', 'Native host disconnected. See Ownference Tabs Setup.')); }
+        try { native.postMessage({ v: 1, id: crypto.randomUUID(), op: 'cancel', target: message.target }); } catch { closeClient(client, fail('native_unavailable', 'Native host disconnected. See OwnMode Browser Setup.')); }
       }
       return;
     }
@@ -159,7 +159,7 @@ chrome.runtime.onConnect.addListener(port => {
       return;
     }
     try { native.postMessage(wire); }
-    catch { closeClient(client, fail('native_unavailable', 'Native host disconnected. See Ownference Tabs Setup.')); }
+    catch { closeClient(client, fail('native_unavailable', 'Native host disconnected. See OwnMode Browser Setup.')); }
   });
   port.postMessage({ type: 'ready' });
   });

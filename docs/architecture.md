@@ -1,6 +1,6 @@
 # Architecture and permissions
 
-Ownference Tabs is a Chrome MV3 extension with extension-owned setup and popup documents, plus an explicitly enabled browser relay for cooperating websites.
+OwnMode Browser is a Chrome MV3 extension with extension-owned setup and popup documents, plus an explicitly enabled browser relay for cooperating websites.
 
 ## Flow
 

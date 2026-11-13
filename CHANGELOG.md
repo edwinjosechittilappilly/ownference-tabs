@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+- Rebrand as OwnMode Browser, with updated relay protocol and native-host identifiers. Upgrades require fresh authorization and native-host registration.
+- Align extension and package versions and publish release installation guidance.
+
 ## 0.2.1
 
 - Correct Chrome's installed manifest version to match the release package, allowing Chrome to recognize the current extension version.

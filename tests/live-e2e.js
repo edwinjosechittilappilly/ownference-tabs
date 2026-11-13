@@ -1,4 +1,4 @@
-// Live acceptance: actual unpacked MV3 extension, actual Ownference bridge and Ollama.
+// Live acceptance: actual unpacked MV3 extension, actual OwnMode bridge and Ollama.
 import { chromium } from 'playwright';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -8,15 +8,15 @@ import { createHash } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import https from 'node:https';
-import { createServer as createWorkspace } from '../../ownference-web/server.js';
-import { installNative, uninstallNative } from '../../ownference/src/native.js';
+import { createServer as createWorkspace } from '../../ownmode-web/server.js';
+import { installNative, uninstallNative } from '../../ownmode/src/native.js';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const bridge = resolve(root, '../ownference/src/cli.js');
+const bridge = resolve(root, '../ownmode/src/cli.js');
 const manifest = JSON.parse(await readFile(join(root, 'manifest.json')));
 const hex = createHash('sha256').update(Buffer.from(manifest.key, 'base64')).digest('hex').slice(0, 32);
 const id = [...hex].map(n => String.fromCharCode(97 + parseInt(n, 16))).join('');
 const origin = `chrome-extension://${id}`;
-const temp = await mkdtemp(join(tmpdir(), 'ownference-tabs-e2e-'));
+const temp = await mkdtemp(join(tmpdir(), 'ownmode-browser-e2e-'));
 const manifestDir = join(temp, 'profile', 'NativeMessagingHosts');
 const nativeOptions = { extensionId: id, configDir: join(temp, 'config'), manifestDir };
 let browser, server, fixture, workspaceTLS, nativeInstalled = false;
@@ -66,7 +66,7 @@ try {
   await popup.locator('#capture').click();
   await popup.waitForFunction(expected => document.querySelector('#text').value === expected, source);
   assert.equal(await popup.locator('#text').inputValue(), source);
-  assert.match(await popup.locator('#source').innerText(), /Selection · Ownference Tabs fixture · http:\/\/127\.0\.0\.1:4175/);
+  assert.ok((await popup.locator('#source').innerText()).endsWith(new URL(page.url()).origin), 'Capture must identify the source page origin.');
   await popup.waitForFunction(() => [...document.querySelector('#model').options].some(option => option.value.startsWith('ollama:')), null, { timeout: 30000 });
   const model = process.env.OLLAMA_MODEL || 'ollama:llama3.2:latest';
   await popup.locator('#model').selectOption(model);
@@ -82,7 +82,7 @@ try {
   const downloaded = join(temp, 'result.txt');
   await download.saveAs(downloaded);
   assert.equal(await readFile(downloaded, 'utf8'), generated);
-  if (process.env.OWNFERENCE_SCREENSHOT) await popup.screenshot({ path: process.env.OWNFERENCE_SCREENSHOT, fullPage: true });
+  if (process.env.OWNMODE_SCREENSHOT) await popup.locator('.shell').screenshot({ path: process.env.OWNMODE_SCREENSHOT });
   await page.bringToFront();
   await page.locator('#password').focus();
   await popup.locator('#capture').click();
@@ -146,12 +146,16 @@ try {
   await child.waitForURL('http://127.0.0.1:4176/');
   assert.equal((await connect(child)).code, 'RELAY_CONTEXT', 'Frames cannot use the relay.');
   await page.bringToFront();
+  const previousRelayStatus = await popup.locator('#relay-status').textContent();
   await popup.locator('#relay-revoke').click();
-  await popup.waitForFunction(() => /revok/i.test(document.querySelector('#relay-status').textContent));
+  const revokeStatus = await popup.waitForFunction(previous => {
+    const current = document.querySelector('#relay-status').textContent;
+    return current !== previous ? current : false;
+  }, previousRelayStatus);
   const revoked = await page.evaluate(async () => {
     try { await window.relay.models(); return null; } catch (error) { return error.code; }
   });
-  assert.ok(revoked, 'Revocation must invalidate an existing connection.');
+  assert.ok(revoked, `Revocation must invalidate the existing connection; UI reported: ${await revokeStatus.jsonValue()}`);
   await page.bringToFront();
   await popup.locator('#relay-enable').click();
   await popup.waitForFunction(() => /enabled/i.test(document.querySelector('#relay-status').textContent));
@@ -199,7 +203,7 @@ try {
   await demo.locator('#generate').click();
   await demo.waitForFunction(() => document.querySelector('#status').textContent === 'Finished.', null, { timeout: 180000 });
   assert.match(await demo.locator('#output').textContent(), /garden|volunteer|harvest/i);
-  if (process.env.OWNFERENCE_WORKSPACE_SCREENSHOT) await demo.screenshot({ path: process.env.OWNFERENCE_WORKSPACE_SCREENSHOT, fullPage: true });
+  if (process.env.OWNMODE_WORKSPACE_SCREENSHOT) await demo.screenshot({ path: process.env.OWNMODE_WORKSPACE_SCREENSHOT, fullPage: true });
   await demo.locator('#disconnect').click();
   assert.equal(await demo.locator('#connection-status').innerText(), 'Not connected');
   console.log('PASS: real HTTPS workspace UI → extension → native host → Ollama, with loopback page fetch blocked and no page token');

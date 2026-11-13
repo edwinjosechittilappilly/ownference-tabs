@@ -1,5 +1,7 @@
 # Repository audit: ownference-tabs
 
+Historical pre-rebrand audit; findings and names reflect the repository at the time of the scan.
+
 **Overall score: 57.8% (grade F)**  
 Detected stacks: node · traits: github actions  
 Checks: 29 pass · 7 partial · 29 fail · 31 not applicable (65 scored of 96)  

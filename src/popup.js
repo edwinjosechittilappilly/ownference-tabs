@@ -71,5 +71,5 @@ $('generate').addEventListener('click', async () => {
 });
 $('cancel').addEventListener('click', () => controller?.abort());
 $('copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(output); status('Copied result.'); } catch { status('Copy failed; select the result and copy it manually.'); } });
-$('download').addEventListener('click', () => { const url = URL.createObjectURL(new Blob([output], { type: 'text/plain;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'ownference-result.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
+$('download').addEventListener('click', () => { const url = URL.createObjectURL(new Blob([output], { type: 'text/plain;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'ownmode-result.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
 loadModels();

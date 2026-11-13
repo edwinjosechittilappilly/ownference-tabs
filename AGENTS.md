@@ -6,7 +6,7 @@
 
 ## Commands and verification
 
-Use Node 24, `npm ci` and `npm run check`. `npm run e2e` requires local Ollama, sibling Ownference and free ports 3210/4175. `npm run package` verifies archive contents and reproducibility. See README for browser installation, transient popup limitations and selectors.
+Use Node 24, `npm ci` and `npm run check`. `npm run e2e` requires local Ollama, sibling OwnMode and free ports 3210/4175. `npm run package` verifies archive contents and reproducibility. See README for browser installation, transient popup limitations and selectors.
 
 ## Conventions and boundaries
 

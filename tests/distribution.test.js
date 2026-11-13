@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 
 test('durable installation retains the release version required for Chrome updates', async () => {
-  const temporary = await mkdtemp(join(tmpdir(), 'ownference-tabs-distribution-'));
+  const temporary = await mkdtemp(join(tmpdir(), 'ownmode-browser-distribution-'));
   try {
     const directory = join(temporary, 'extension');
     execFileSync(process.execPath, [join(root, 'scripts/cli.js'), 'install', '--directory', directory]);
