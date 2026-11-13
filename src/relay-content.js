@@ -1,13 +1,13 @@
 (() => {
-  if (window !== window.top || globalThis.__ownferenceRelayInstalled) return;
-  globalThis.__ownferenceRelayInstalled = true;
+  if (window !== window.top || globalThis.__ownmodeRelayInstalled) return;
+  globalThis.__ownmodeRelayInstalled = true;
   let channel, activePort;
   window.addEventListener('message', event => {
-    if (event.source !== window || event.origin !== location.origin || !/^https?:$/.test(location.protocol) || event.data?.source !== 'ownference-page' || event.data?.type !== 'connect' || event.data?.version !== 1 || event.ports.length !== 1) return;
+    if (event.source !== window || event.origin !== location.origin || !/^https?:$/.test(location.protocol) || event.data?.source !== 'ownmode-page' || event.data?.type !== 'connect' || event.data?.version !== 1 || event.ports.length !== 1) return;
     if (channel) { channel.close(); activePort.disconnect(); }
     channel = event.ports[0];
     const current = channel;
-    const port = chrome.runtime.connect({ name: 'ownference-relay-v1' });
+    const port = chrome.runtime.connect({ name: 'ownmode-relay-v1' });
     activePort = port;
     let ready = false;
     port.onMessage.addListener(message => {

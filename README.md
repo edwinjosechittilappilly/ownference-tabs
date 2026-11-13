@@ -1,102 +1,104 @@
-<p align="center"><img src="docs/assets/logo.svg" width="88" alt="Ownference linked-loop logo with browser-tab badge"></p>
+![OwnMode Browser](docs/assets/hero.svg)
 
-# Ownference Tabs
-### Your tabs. Your AI.
+# OwnMode Browser
 
-Choose page text, preview exactly what will be sent, and let a local model help you **read, rewrite, summarize, compare or draft**. Cooperating websites can also use your local compute through a permissioned browser relay.
+**Switch to your own AI.**
 
-<p><a href="https://github.com/edwinjosechittilappilly/ownference-tabs/releases">Download releases</a> · <a href="#install-from-a-release">Install</a> · <a href="#use-it-on-a-page">Page assistant</a> · <a href="#let-a-website-use-local-compute">Browser relay</a> · <a href="docs/architecture.md">Architecture</a></p>
+Local intelligence for your apps and browser.
 
-![Ownference Tabs: your tabs, your AI](docs/assets/hero.svg)
+Select text, review what will be sent, then summarize, rewrite, extract, compare or draft with your own model. Cooperating web apps can also request local inference after you approve their tab.
 
-**Apache-2.0 · Chrome MV3 · User-approved access · Private preview**
+[![CI](https://github.com/edwinjosechittilappilly/ownmode-browser/actions/workflows/ci.yml/badge.svg)](https://github.com/edwinjosechittilappilly/ownmode-browser/actions/workflows/ci.yml)
+[Apache-2.0](LICENSE) · [Install](#install) · [Browser relay](#let-a-web-app-use-your-models) · [Issues](https://github.com/edwinjosechittilappilly/ownmode-browser/issues/new/choose)
 
-## Two workflows, one extension
+## Install
 
-| Use it yourself | Let a cooperating app connect |
-|---|---|
-| Select text → capture → review → generate → copy/download | Open site → approve relay in extension → connect the site's SDK |
-| You decide the source text and task | The approved site submits bounded inference requests |
-| No automatic page mutation or sending | No bridge token exposed to page scripts |
+Requires **Chrome** and a running [OwnMode Connect](https://github.com/edwinjosechittilappilly/ownmode) with a ready local model. The Apple-native provider requires Apple hardware and macOS 26; other providers have their own requirements.
 
-No background scraping of every tab. No silent cloud fallback. No claim to replace a website's backend AI calls.
+### Download and load
 
-## Install from a release
+1. [Download the extension ZIP](https://github.com/edwinjosechittilappilly/ownmode-browser/releases/download/v0.3.0/ownmode-browser.zip) and extract it into a folder you will keep. The ZIP is unsigned and is not a Chrome Web Store listing.
+2. Open **chrome://extensions** and enable **Developer mode**.
+3. Choose **Load unpacked**, select that folder and pin OwnMode Browser.
 
-Requires Chrome, Node 24+, GitHub CLI with access to this private repository, and the running [Ownference bridge](https://github.com/edwinjosechittilappilly/ownference). The bridge can use a downloaded Ollama generation model or another ready local provider.
+No GitHub account or npm needed for the extension ZIP. This is an unpacked extension, **not a Chrome Web Store listing**. Never disable browser security.
 
-```sh
-gh release download v0.2.1 \
-  --repo edwinjosechittilappilly/ownference-tabs \
-  --pattern ownference-tabs-0.2.1.tgz
+### Or use npx
 
-# Copies the extension out of the temporary npx cache:
-npx --yes --package "$PWD/ownference-tabs-0.2.1.tgz" \
-  ownference-tabs install --directory "$HOME/Applications/OwnferenceTabs"
-```
-
-The target directory must be empty. Open **chrome://extensions**, enable Developer mode, choose **Load unpacked**, and select `~/Applications/OwnferenceTabs`. Pin the extension for easy access.
-
-Prefer a durable CLI?
+With **Node 24+**, copy it into an empty durable directory:
 
 ```sh
-npm install -g ./ownference-tabs-0.2.1.tgz
-ownference-tabs path
+npx --yes --package https://github.com/edwinjosechittilappilly/ownmode-browser/releases/download/v0.3.0/ownmode-browser-0.3.0.tgz ownmode-browser install --directory "$HOME/Applications/OwnModeBrowser"
 ```
 
-`path` prints a durable content-addressed extension directory—not an npx cache directory. Load that directory in Chrome. The release also includes **ownference-tabs.zip**; extract it and load the extracted directory if you prefer not to use npm. The zip does not retain the keyed development ID, so use its actual Chrome ID for grants/native installation.
-
-No public npm registry publication or Chrome Web Store approval is implied. Private release downloads require repository access. Never disable browser security to install or connect.
-
-## Use it on a page
-
-1. Open **Setup** from the extension. Copy the exact-origin grant command into a terminal running the Ownference CLI.
-2. Paste the one-time token into Setup and save. It lives in `chrome.storage.session`, not sync or persistent local storage.
-3. Open a regular HTTP(S) page and select text. Open the extension and choose **Read selection / page**.
-4. Inspect the source label and editable preview. No selection captures visible body text; password fields are refused.
-5. Choose a local model and task, then **Generate locally**. Review the answer before copying or downloading.
-
-**Keep the action popup open while generating.** Closing it interrupts that request and loses the result. There is no automatic insert, email send, purchase or other model-authorized action.
-
-Chrome ends the stored-token session on browser/extension lifecycle changes. Re-enter a securely retained token or create a new grant. To revoke it, use the exact extension origin displayed in Setup:
+Load that directory in Chrome. It survives the npx cache. For a durable CLI:
 
 ```sh
-ownference revoke --origin chrome-extension://iacejanagmkfpcajmcnlbikgnmomdpba
+npm install -g https://github.com/edwinjosechittilappilly/ownmode-browser/releases/download/v0.3.0/ownmode-browser-0.3.0.tgz
+ownmode-browser path
 ```
 
-Use your actual ID if it differs from the keyed unpacked release.
+`path` prints a durable content-addressed extension directory. ZIP and keyed npm installations can have different Chrome IDs; always use the actual ID from Setup.
 
-## Let a website use local compute
+## Your first useful result
 
-The relay is an implemented transport, not just a design document:
+1. Open **Setup**. Run its exact-origin grant command in a terminal with OwnMode Connect installed.
+2. Paste the one-time token into Setup and save.
+3. Select text on a regular HTTP(S) page. Open OwnMode Browser and choose **Read selection / page**.
+4. Review the editable source preview. Pick a task and a local model; **Generate locally**.
+5. Review the result, then **Copy** or **Download**.
 
-**Frontend SDK → approved document channel → extension → native host → local bridge → model.**
+![OwnMode Browser with reviewed source text and a real local-model result](docs/assets/screenshot.png)
 
-Install the native host for the ID shown in `chrome://extensions`:
+*A deliberate path from selected text to a local result. No background scraping or automatic page edits.*
 
-```sh
-ownference native install --extension-id iacejanagmkfpcajmcnlbikgnmomdpba
-ownference native status
-```
+Keep the action popup open while generating; closing it interrupts that request. With no selection, capture uses visible body text. Password fields are refused and source text is capped at 24,000 characters.
 
-Open the cooperating website, invoke Ownference Tabs, inspect the exact origin and choose **Enable relay for this tab**. Then use the website's Connect action. The developer uses [`createRelayClient()`](https://github.com/edwinjosechittilappilly/ownference-web); the page never receives the native host's bridge token.
+## Let a web app use your models
 
-Approval is session-only and scoped to the tab's current top-level document. Permission survives ordinary service-worker idleness, with document identity rechecked on reconnection. Active work is never replayed after a connection or worker loss. Revocation, navigation or a disconnected document cancels its work; browser/extension restart clears session grants. Use the relay controls to revoke access or stop work; uninstall the native host with `ownference native uninstall`.
+The relay lets a **cooperating frontend** use local compute without receiving your bridge token.
 
-Only approve sites you trust. Other scripts on the same approved origin share its permission. A site receives generated output and can transmit it elsewhere. Do not approve a site merely because it says a request is private.
+1. Open Setup and copy its native-host installation command. It uses your actual extension ID:
 
-## Permission and privacy boundaries
+   ```sh
+   ownmode native install --extension-id YOUR_CHROME_EXTENSION_ID
+   ownmode native status
+   ```
 
-- **activeTab + scripting:** capture or relay injection only after extension-owned user action. No always-on all-sites content script.
-- **storage:** session credentials/grants, not prompt history or synchronized tokens.
-- **nativeMessaging:** extension-to-installed-host transport. Website scripts cannot call the native host directly.
-- **Loopback host permission:** the standalone assistant connects only to `127.0.0.1:3210`.
-- Top-level HTTP(S) documents only; internal/store pages and cross-origin frames are restricted.
-- Captured page text is capped at 24,000 characters and marked when truncated. Titles, page text and model output are untrusted.
+2. Open the cooperating website.
+3. Open OwnMode Browser, check the displayed origin and choose **Enable relay for this tab**.
+4. Use that website's Connect action.
 
-Prompt injection and incorrect output remain possible. The permission layer—not a prompt—controls access. No cloud fallback, telemetry, clipboard reads or arbitrary tool execution.
+**Page → approved document channel → extension → native host → bridge → model.**
 
-## Develop, package and verify
+Use **Revoke this tab**, **Revoke all grants** or **Stop relay work** whenever you want. Developers integrate [`createRelayClient()` from OwnMode Web](https://github.com/edwinjosechittilappilly/ownmode-web#add-local-ai-to-your-app).
+
+The extension does not replace a website's existing backend AI or give model output permission to click, buy, send email or execute tools.
+
+## Upgrading from Ownference
+
+Upgrade Ownference Bridge, Web and Tabs together to OwnMode Connect, Web and Browser; their relay identifiers are not compatible across versions. Before removing the old runtime, run its `ownference native uninstall` and, if enabled, `ownference startup uninstall` to remove the old native host and startup service. Then install the new extension, register its actual Chrome ID with `ownmode native install --extension-id YOUR_CHROME_EXTENSION_ID`, and issue a fresh direct grant in Setup. Re-enable relay for each trusted tab; old grants and tokens are not imported.
+
+<details>
+<summary>Permissions, sessions and revocation</summary>
+
+- `activeTab` and `scripting`: capture/relay only after extension-owned user action; no always-on all-sites listener.
+- `storage`: session credentials/grants, not synchronized prompt history.
+- `nativeMessaging`: the extension talks to the installed host; the website cannot call it directly.
+- Loopback host permission: the assistant uses `127.0.0.1:3210`.
+- Relay is limited to the current top-level HTTP(S) document. Internal pages and cross-origin frames are restricted.
+
+Validated grants can survive ordinary worker idleness; live work is never replayed after a lost connection. Navigation or revoke cancels work; browser/extension restart clears session grants. Re-enter a securely retained assistant token or issue a fresh grant after a session reset.
+
+Revoke a direct extension grant with `ownmode revoke --origin chrome-extension://YOUR_CHROME_EXTENSION_ID`. Remove the native host with `ownmode native uninstall`.
+
+Approve only trusted sites: their other same-origin scripts share access, and they can transmit generated output elsewhere. No cloud fallback or automatic website mutation. Prompt injection and incorrect answers remain possible.
+
+</details>
+
+## Help make local AI useful
+
+Share a page workflow that saves you time, report a capture issue or suggest a better preset. [Open an issue](https://github.com/edwinjosechittilappilly/ownmode-browser/issues/new/choose); omit private page content and credentials.
 
 ```sh
 npm ci
@@ -106,10 +108,10 @@ npx playwright install chromium
 npm run e2e
 ```
 
-Live tests require the sibling runtime, real Ollama and free local test ports. They exercise real Chrome/extension/native-model paths; see [testing](docs/testing.md) and [verification](docs/verification.md) for exact scope. Chrome's transient toolbar popup is not exposed as a Playwright Page, so action grants are genuine while the identical popup document is driven in a tab.
+E2E requires sibling `ownmode` and `ownmode-web` checkouts and real Ollama. It drives genuine extension action/activeTab grants and the same popup document in a tab because Playwright cannot expose Chrome's transient toolbar popup. Packaging verifies an explicit asset list, required icons/license, no development public key in the ZIP and reproducible archive bytes.
 
-Packaging stages an explicit asset list, strips the development public key from the zip, includes LICENSE/NOTICE and verifies reproducibility for the same inputs/toolchain. Artifacts are not store-signed.
+[Architecture](docs/architecture.md) · [Relay design](docs/browser-relay-plan.md) · [Testing](docs/testing.md) · [Verification](docs/verification.md) · [Brand assets](docs/assets/README.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
-**The family:** [Bridge](https://github.com/edwinjosechittilappilly/ownference) · [Web SDK](https://github.com/edwinjosechittilappilly/ownference-web) · [Tabs + Relay](https://github.com/edwinjosechittilappilly/ownference-tabs) · [Native Mac](https://github.com/edwinjosechittilappilly/ownference-mac)
+**Switch to your own AI.** [Connect](https://github.com/edwinjosechittilappilly/ownmode) · [Web](https://github.com/edwinjosechittilappilly/ownmode-web) · [Browser](https://github.com/edwinjosechittilappilly/ownmode-browser) · [Mac](https://github.com/edwinjosechittilappilly/ownmode-mac)
 
-See [relay design and trust model](docs/browser-relay-plan.md), [security](SECURITY.md) and [contributing](CONTRIBUTING.md). Licensed under [Apache-2.0](LICENSE). Ownference is a working brand, not trademark-cleared.
+Apache-2.0. Distribution uses GitHub releases, not the npm registry or Chrome Web Store. SHA256SUMS accompanies releases. No trademark clearance is claimed.

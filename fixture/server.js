@@ -1,7 +1,7 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 const html = await readFile(new URL('./index.html', import.meta.url));
-const sdk = new URL('../../ownference-web/src/index.js', import.meta.url);
+const sdk = new URL('../../ownmode-web/src/index.js', import.meta.url);
 function serve(port) {
   return http.createServer(async (req, res) => {
     if (req.url === '/sdk.js') {

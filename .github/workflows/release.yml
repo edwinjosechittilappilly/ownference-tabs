@@ -24,6 +24,7 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: test "$RELEASE_TAG" = "v$(node -p 'JSON.parse(require("fs").readFileSync("package.json")).version')"
+      - run: test "$RELEASE_TAG" = "v$(node -p 'JSON.parse(require("fs").readFileSync("manifest.json")).version')"
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm audit --audit-level=moderate
@@ -32,4 +33,4 @@ jobs:
       - name: Checksum release artifacts
         run: (cd dist && shasum -a 256 ./*.tgz ./*.zip > SHA256SUMS)
       - name: Publish verified tag artifacts
-        run: gh release create "$RELEASE_TAG" dist/* --verify-tag --title "Ownference $RELEASE_TAG" --generate-notes
+        run: gh release create "$RELEASE_TAG" dist/* --verify-tag --title "OwnMode Browser $RELEASE_TAG" --notes-file RELEASE-NOTES.md

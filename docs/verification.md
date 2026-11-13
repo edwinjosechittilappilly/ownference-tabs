@@ -1,4 +1,18 @@
-# Observed verification — 0.2 family
+# Observed verification
+
+## OwnMode Browser 0.3.0 identity cutover
+
+- `npm run check` passed: lint, secret scanning and all 15 behavior tests.
+- `npm run package` produced the reproducible renamed extension ZIP with the required assets/license and without the development manifest key.
+- Live Chromium/Ollama acceptance passed after replacing a stale fixture-title assertion with a source-origin contract assertion and migrating screenshot environment names.
+- The actual extension action/activeTab capture, source preview, model generation, exact download contents and password refusal passed.
+- The renamed SDK/relay/native-host path passed origin/document isolation, revocation, cancellation and navigation checks. The real HTTPS workspace generated with loopback page fetch blocked and no bridge token exposed to the page.
+- The source-first UI and new shared identity were captured from the actual popup document and visually inspected. The harness drives that document in a tab after a genuine action grant; it does not expose Chrome's transient toolbar popup.
+- All native registration and browser state were isolated in temporary directories and cleaned up. GitHub release download/install checks and CI remain separate evidence.
+
+## Historical verification — Ownference 0.2 family
+
+Historical evidence for the pre-rebrand Ownference 0.2 releases; it does not verify OwnMode 0.3.0.
 
 Environment: Node24.10.0, Playwright Chromium158/build1254, arm64 Mac, real bridge/native host and Ollama.
 

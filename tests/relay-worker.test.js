@@ -15,7 +15,7 @@ function event() {
   const listeners = [];
   return { addListener: listener => listeners.push(listener), emit: (...args) => listeners.map(listener => listener(...args)) };
 }
-function port(senderInfo = sender, name = 'ownference-relay-v1') {
+function port(senderInfo = sender, name = 'ownmode-relay-v1') {
   return {
     name, sender: senderInfo, messages: [], disconnected: false,
     onMessage: event(), onDisconnect: event(),
@@ -34,7 +34,7 @@ function harness({ stored = { 7: grant }, delayed = false, nativeFails = false }
     id: 'extension', getURL: path => `chrome-extension://extension/${path}`,
     onMessage: event(), onConnect: event(),
     connectNative(name) {
-      assert.equal(name, 'com.ownference.bridge');
+      assert.equal(name, 'com.ownmode.bridge');
       if (nativeFails) throw new Error('host missing');
       const native = port(); nativePorts.push(native); return native;
     }

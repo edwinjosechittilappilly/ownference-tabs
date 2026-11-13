@@ -1,6 +1,6 @@
 {
-  "name": "@ownference/tabs",
-  "version": "0.2.1",
+  "name": "@ownmode/browser",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -8,7 +8,7 @@
   },
   "license": "Apache-2.0",
   "bin": {
-    "ownference-tabs": "./scripts/cli.js"
+    "ownmode-browser": "./scripts/cli.js"
   },
   "files": [
     "NOTICE",

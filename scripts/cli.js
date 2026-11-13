@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { extensionFiles, root } from './extension-files.js';
 
-const usage = 'Usage: ownference-tabs path | ownference-tabs install --directory <path>';
+const usage = 'Usage: ownmode-browser path | ownmode-browser install --directory <path>';
 
 async function copyAssets(destination, files) {
   for (const file of files) {
@@ -23,7 +23,7 @@ async function durablePath() {
     hash.update(`${file}\0${contents.length}\0`);
     hash.update(contents);
   }
-  const base = join(homedir(), '.local', 'share', 'ownference', 'tabs');
+  const base = join(homedir(), '.local', 'share', 'ownmode', 'browser');
   const destination = join(base, hash.digest('hex'));
   await mkdir(base, { recursive: true });
   const temporary = await mkdtemp(join(base, '.install-'));

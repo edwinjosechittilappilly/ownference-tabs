@@ -10,7 +10,7 @@ async function request(path, token, options = {}) {
     response = await fetch(`${BRIDGE}${path}`, { ...options, headers: { Authorization: `Bearer ${token}`, ...options.headers } });
   } catch (error) {
     if (error.name === 'AbortError') throw error;
-    throw new BridgeError('unreachable', 'Cannot reach Ownference at 127.0.0.1:3210. Start the bridge and check Chrome’s local network access.');
+    throw new BridgeError('unreachable', 'Cannot reach OwnMode at 127.0.0.1:3210. Start the bridge and check Chrome’s local network access.');
   }
   if (!response.ok) {
     let data;

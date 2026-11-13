@@ -11,7 +11,7 @@ if (!/^\d+$/.test(epoch) || Number(epoch) < 315532800 || Number(epoch) > 4354819
   throw new Error('SOURCE_DATE_EPOCH must be seconds between 1980-01-01 and 2107-12-31 UTC.');
 }
 const timestamp = new Date(Math.floor(Number(epoch) / 2) * 2000);
-const temporary = await mkdtemp(join(tmpdir(), 'ownference-tabs-package-'));
+const temporary = await mkdtemp(join(tmpdir(), 'ownmode-browser-package-'));
 try {
   const stage = join(temporary, 'stage');
   for (const file of files) {
@@ -39,8 +39,8 @@ try {
   const hashes = await Promise.all(archives.map(async archive => createHash('sha256').update(await readFile(archive)).digest('hex')));
   if (hashes[0] !== hashes[1]) throw new Error('Package builds are not reproducible.');
   await mkdir(join(root, 'dist'), { recursive: true });
-  await copyFile(archives[0], join(root, 'dist', 'ownference-tabs.zip'));
-  console.log(`Created dist/ownference-tabs.zip (sha256 ${hashes[0]})`);
+  await copyFile(archives[0], join(root, 'dist', 'ownmode-browser.zip'));
+  console.log(`Created dist/ownmode-browser.zip (sha256 ${hashes[0]})`);
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }
