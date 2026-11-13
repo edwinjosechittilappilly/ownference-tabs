@@ -4,6 +4,22 @@ let controller, output = '';
 const status = message => { $('status').textContent = message; };
 const token = async () => (await chrome.storage.session.get('token')).token || '';
 
+async function relayTab() {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (!tab?.id || !/^https?:$/.test(new URL(tab.url).protocol)) throw new Error('Open an HTTP or HTTPS page first.');
+  return tab;
+}
+async function relayAction(action) {
+  try {
+    const tab = action === 'revoke-all' || action === 'stop' ? null : await relayTab();
+    const response = await chrome.runtime.sendMessage({ relayAction: action, tabId: tab?.id, origin: tab ? new URL(tab.url).origin : undefined });
+    if (!response?.ok) throw new Error(response?.error || 'Relay unavailable.');
+    $('relay-status').textContent = response.message;
+  } catch (error) { $('relay-status').textContent = error.message; }
+}
+for (const action of ['enable', 'revoke', 'revoke-all', 'stop']) $('relay-' + action).addEventListener('click', () => relayAction(action));
+relayTab().then(tab => { $('relay-origin').textContent = new URL(tab.url).origin; }).catch(() => { $('relay-origin').textContent = 'Open an HTTP or HTTPS page to enable relay.'; });
+
 async function loadModels() {
   const secret = await token();
   if (!secret) { status('Open Setup to authorize this extension and save your session token.'); return; }

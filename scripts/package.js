@@ -2,11 +2,10 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { copyFile, chmod, mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { extensionFiles, root } from './extension-files.js';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const files = ['LICENSE', 'NOTICE', 'manifest.json', 'options.html', 'popup.html', 'src/client.js', 'src/options.js', 'src/popup.js', 'src/style.css'].sort();
+const files = await extensionFiles();
 const epoch = process.env.SOURCE_DATE_EPOCH ?? '315532800';
 if (!/^\d+$/.test(epoch) || Number(epoch) < 315532800 || Number(epoch) > 4354819198) {
   throw new Error('SOURCE_DATE_EPOCH must be seconds between 1980-01-01 and 2107-12-31 UTC.');
@@ -35,6 +34,7 @@ try {
     if (JSON.stringify(entries) !== JSON.stringify(files)) throw new Error('Archive contains unexpected or missing files.');
     const manifest = JSON.parse(execFileSync('unzip', ['-p', archive, 'manifest.json'], { encoding: 'utf8' }));
     if (Object.hasOwn(manifest, 'key')) throw new Error('Packaged manifest must not contain a key.');
+    if (!manifest.permissions?.includes('nativeMessaging')) throw new Error('Packaged manifest must allow native messaging.');
   }
   const hashes = await Promise.all(archives.map(async archive => createHash('sha256').update(await readFile(archive)).digest('hex')));
   if (hashes[0] !== hashes[1]) throw new Error('Package builds are not reproducible.');

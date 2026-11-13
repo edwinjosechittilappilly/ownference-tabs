@@ -10,7 +10,7 @@ Use Node 24, `npm ci` and `npm run check`. `npm run e2e` requires local Ollama, 
 
 ## Conventions and boundaries
 
-Preserve user-triggered capture, preview-before-send, session-only tokens, text rendering and narrow permissions. Never add page inference messages, broad host permissions or cloud fallback under an unrelated change. Browser relay is a plan only in docs/browser-relay-plan.md. The unpacked public key is not a signing secret and is stripped from packaged archives.
+Preserve user-triggered capture, preview-before-send, session-only tokens, text rendering and narrow permissions. The browser relay is explicitly enabled by the user per tab; preserve its document-bound approval and native messaging boundaries described in docs/browser-relay-plan.md. Never add broad host permissions or cloud fallback. The unpacked public key stabilizes the development extension ID and is stripped from packaged zip archives.
 
 ## Workflow
 

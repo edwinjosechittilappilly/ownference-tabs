@@ -1,89 +1,28 @@
 # Browser relay: local compute for frontend applications
 
-Status: **planned, not implemented**. Requested as an additional idea while the direct-loopback SDK and page assistant were being built. This plan does not replace or claim completion of the existing products.
+The relay connects a cooperating frontend to local models through the extension and the installed Ownference native messaging host. It does not intercept other websites' requests, expose a runtime token to a page, or provide arbitrary local actions.
 
-## Positioning
+## Flow and approval
 
-**Ownference Relay — Your website. Their models.**
+1. The user opens the extension on an HTTP(S) tab and explicitly enables relay for that tab. The extension injects an isolated content script using `activeTab` and `scripting`; there is no always-on all-sites content script.
+2. The page uses `createRelayClient()` from `@ownference/web` and calls `connect()`. Only top-level documents can connect. If the relay has not been enabled, connection times out with instructions to enable it in the extension.
+3. The content script relays messages to the extension service worker. The worker uses browser-attested sender tab, frame, origin and document identity to enforce the session grant. Navigation, revocation or disconnect ends the corresponding work.
+4. The worker forwards bounded model and generation requests through the `com.ownference.bridge` native host. The host owns the bridge credential and communicates with the local runtime; a missing host or stopped runtime is an error, not a cloud fallback.
 
-A frontend calls a browser extension that mediates access to the visitor's local models. Keep this as a separate module within Ownference Tabs initially, with a separately packaged extension/repository only if permission, lifecycle or distribution requirements diverge. This avoids a fourth install and premature duplicate bridges. The existing `ownference-web` SDK is the developer entry point; a future transport selector can offer direct loopback or relay explicitly. Neither transport can intercept unrelated websites' backend LLM calls.
+## Protocol
 
-## Intended architecture
+The page posts `{source: 'ownference-page', type: 'connect', version: 1}` to its own window and transfers a `MessagePort`. The content script validates the window, origin and version and answers on the port with `{type: 'ready'}` or `{type: 'error', error: {code, message}}`. Subsequent requests are `{id, op: 'models' | 'generate' | 'cancel', input?, target?}`. Responses are `{id, event: 'models' | 'delta' | 'done' | 'error', data?, text?, error?}`. Cancellation targets work belonging to the same connection; disconnection does not replay requests.
 
-```mermaid
-sequenceDiagram
-    participant Page as Frontend SDK
-    participant Content as Isolated content relay
-    participant Ext as Extension service worker
-    participant User as Extension approval UI
-    participant Host as Native messaging host
-    participant Runtime as Ownference runtime
-    Page->>Content: Versioned request + requestId
-    Content->>Ext: Forward with browser-attested sender metadata
-    Ext->>User: Approve exact origin + inference scope
-    User-->>Ext: Approve or deny
-    Ext->>Host: Authorized bounded request
-    Host->>Runtime: Local model generation
-    Runtime-->>Host: Text deltas / completion / error
-    Host-->>Ext: Framed native messages
-    Ext-->>Content: Request-scoped stream events
-    Content-->>Page: Typed events to requesting frame
-```
+Native messaging uses versioned, length-framed JSON, with `models`, `generate` and `cancel` requests and `models`, `delta`, `done` and `error` events. The host's browser registration must allow the exact extension ID. Model inventory and inference are available only after extension-owned approval. Page scripts on an approved origin share that origin's access; returned results can be transmitted by the page.
 
-Prefer native messaging for the extension-to-host transport, so hosted pages do not need direct loopback access or a copied bearer token. This requires a real installed native host and a narrowly registered extension allowlist. A website alone cannot access Apple's Swift framework or native messaging. The current HTTP bridge remains useful for direct integration and diagnostics; no unauthenticated native forwarding endpoint may be added.
+## Distribution and installation
 
-## Public interface proposal
+The npm package contains the unpacked extension assets. `ownference-tabs path` installs a content-addressed copy under `~/.local/share/ownference/tabs/` and prints its durable directory, including when invoked through npx. Alternatively, run `ownference-tabs install --directory /path/to/empty/directory` to select the location. Load the resulting directory via Chrome's developer-mode **Load unpacked** control. Both copies retain the public manifest key, giving unpacked installations a stable ID. Register the native host using that exact ID with the bridge's native installer. A new package with changed assets gets a new content-addressed path; load the new directory to update the extension.
 
-A future `createRelayClient()` should retain the SDK's task/model/stream shapes and add explicit `connect()`/`disconnect()` and connection status. Requests are not sent until a user asks to connect. Connection discovery reveals only extension availability, not the user's model inventory, until approved.
+`npm run package` builds a reproducible zip for distribution and removes the unpacked manifest key. Its installed ID depends on how it is distributed, so native host registration must use its actual ID. The zip is not a signed or Chrome Web Store-approved extension. Browser or enterprise policy may restrict installation and native messaging.
 
-Transport messages:
+## Security and limitations
 
-- `hello`: protocolVersion and fresh connection nonce.
-- `connect`: request ID, requested scope (`models`, `generate`) and requested session lifetime; the extension derives the real origin, tab and frame.
-- `models`: request ID after approval.
-- `generate`: request ID and the existing bounded task/model/text/instruction request.
-- `cancel`: same connection, frame and request ID; cannot cancel another site's work.
-- `delta`, `done`, `error`: version, request ID and payload, exactly one terminal event.
-- `disconnect`: revoke that active connection and abort its work.
+The extension grants relay access to a particular tab, origin and document for the current browser session, not to all websites or subframes. The worker derives identity from browser sender metadata rather than page-supplied origin fields. Revocation, navigation and disconnection cancel active work. A service-worker restart restores session grants and revalidates the browser-attested document identity; live requests fail closed and are never replayed. Browser restart clears session grants. Up to two requests per origin and eight total can be active, with a 120-second deadline. Requests are bounded and local only; generated text cannot execute tools or grant permissions. The user's provider must be running and available. Safari and Firefox have different extension and native-host requirements and are not claimed as supported.
 
-No arbitrary URLs, local files, shell commands, tool names, OS actions, email sending or purchases in the initial scope. Embeddings, background agents and file access require separate future capability designs, not inference permission inheritance.
-
-## Security invariants
-
-1. **Origin identity:** use `sender.origin`, `sender.tab.id`, `sender.frameId` and `sender.documentId` from the browser. A page-supplied `origin` is never trusted. Refuse opaque/null origins, sandboxed frames, browser/internal URLs and unapproved subframes. Default top-level frames only.
-2. **Page relay:** validate `event.source === window`, `event.origin === location.origin`, protocol version and a strict size/schema before forwarding. Page code is inherently untrusted, including other scripts on an approved origin; nonces correlate messages but do not make same-origin malicious scripts trustworthy.
-3. **Narrow installation:** request site access only after an explicit user action; avoid an always-on `<all_urls>` content script. Prefer optional host permissions per approved site. No externally callable `generate` endpoint without the same approval checks.
-4. **Permission ownership:** approval happens in extension-owned UI, never an imitation dialog rendered by the website. Show exact origin, available scope, selected provider/model, expected compute limits and session lifetime. Default session-only; persistent grants are opt-in, inspectable and revocable.
-5. **Secret confinement:** website scripts never receive runtime grant tokens. Native host manifests permit only this extension ID; do not trust claimed website origins from the host payload without extension-owned approval state.
-6. **Isolation:** bind requests to the initiating document; navigation, tab close, extension disconnect or revocation cancels work. Do not route a response to a replacement document with a reused frame ID.
-7. **Resource control:** per-site and global concurrency, input/output limits, bounded queue, timeout and cancellation; user-visible compute indicator and Stop all button. Deny background workloads by default.
-8. **Privacy:** return results only to the initiating connection/frame. Once returned, the website can transmit them. Model names may fingerprint users; reveal only after permission. No prompts or response content in logs/telemetry.
-9. **No model-authorized privilege:** generated text never grants permissions, executes actions or changes routing policy. Treat page text and output as untrusted.
-10. **Local-only routing:** provider endpoints remain loopback and native Apple model selection remains on-device. No silent cloud fallback through a future transport adapter.
-
-## Lifecycle and compatibility
-
-Chrome MV3 service workers can suspend. A native messaging connection may affect lifetime, but lifetime behavior must be verified for supported browser versions, not assumed. The protocol needs a disconnection terminal error, not automatic replay of generation; replay could duplicate actions or compute. Use explicit user retry. Keep active connection state inspectable from the extension UI.
-
-Safari/Firefox require their own extension/native transport packaging and permission validation. Do not advertise them until exercised. Enterprise policy can prohibit native messaging or extension installation. UI should explain the missing host, missing permission, provider unavailable and blocked-by-policy cases separately.
-
-## Acceptance before implementation can be called complete
-
-- A real HTTPS frontend connects through the installed extension/native host without receiving a bridge token or fetching localhost directly.
-- Allow/deny, per-origin isolation, subframe rejection, navigation/document replacement, revoke and cancel are tested through actual extension behavior.
-- Real Ollama generation streams through page → relay → native host → runtime → page; Apple availability and LM Studio are separately verified.
-- A hostile second site and a crafted page message cannot use an existing grant, enumerate models, receive another request's output or cancel its work.
-- Browser restart, service-worker suspension, host exit and model failure return explicit terminal errors without replaying requests.
-- Bounded requests/backpressure are tested under concurrent origins; UI Stop all reliably aborts provider work.
-- Protocol fixtures/version compatibility, host installer/uninstaller, signed packaging where required, privacy disclosure and onboarding docs ship together.
-- Independent security review is completed before making externally reachable relay features available.
-
-## Delivery order
-
-1. Freeze protocol and threat model against the existing bridge interface.
-2. Implement native host registration and extension-only transport, with installer/uninstaller and isolated tests.
-3. Implement approval UI and document-scoped request registry.
-4. Add frontend SDK relay adapter and one HTTPS cooperating example.
-5. Run real multi-origin abuse tests and Ollama browser acceptance, review findings, package and document observed support.
-
-This is planning only. The current Ownference Tabs manifest intentionally has no website message listeners or native-messaging permission. Those must not be silently added under the guise of a documentation change.
+The existing popup capture workflow remains separate: the user previews selected or page text before sending it. Neither workflow prevents an approved website from transmitting content it already receives. See testing.md and verification.md for test procedures and observed evidence; implementation alone is not proof of browser, policy or provider compatibility.

@@ -4,8 +4,10 @@
   "version": "0.1.0",
   "description": "Turn selected page text into answers, locally.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoCXfo7Yv9llRpxWio5Pg2ohEbk9ogmNob/I3N5BVoumgg72RRB0B46LI4xVVyziuJZXfoxtI7m7pHk+T2KnwZNXjMU6b6vHDijXgVXILMpu6zBIjIMOnaEQoqZHn9rLu3ZWdIVkQt1c9vAgB7QXpU6p9IE3VSjUT1vlSzbTLB74CyWTy+s+9Ja7/hj57GDt8H4364R0NsyedmlFbzcsw/T7LeJv/mxuhMfNzbBZL4zxKhnXMAEO7AmU1BmKKu3MPwbaqf9xFzcCylj5Ncn7bE9N+KK8P+WbU7auOgM38jGtdqQqV/XKVEMzf4IzEIWVz/QlM1QjooctnqdCi9l7uQQIDAQAB",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "nativeMessaging"],
   "host_permissions": ["http://127.0.0.1:3210/*"],
-  "action": { "default_title": "Ownference Tabs", "default_popup": "popup.html" },
+  "background": { "service_worker": "src/relay-worker.js" },
+  "icons": { "16": "docs/assets/icon-16.png", "32": "docs/assets/icon-32.png", "48": "docs/assets/icon-48.png", "128": "docs/assets/icon-128.png" },
+  "action": { "default_title": "Ownference Tabs", "default_popup": "popup.html", "default_icon": { "16": "docs/assets/icon-16.png", "32": "docs/assets/icon-32.png" } },
   "options_page": "options.html"
 }

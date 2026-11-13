@@ -1,13 +1,17 @@
-# Observed verification
+# Observed verification — 0.2.0
 
-Environment: Node24.10.0, Playwright Chromium158.0.8127.18 (build1254), arm64 Mac, real Ownference bridge and local Ollama. Acceptance performed during implementation, 2026-11-12/13.
+Environment: Node24.10.0, Playwright Chromium158/build1254, arm64 Mac, real bridge/native host and Ollama.
 
-- `npm run check`: 4 stream-client behavior tests passed, plus ESLint and Secretlint. Loaded client coverage: 93.10% lines, 76.19% branches, 71.43% functions. This is not coverage of all extension UI code.
-- `OWNFERENCE_SCREENSHOT=/tmp/ownference-tabs-verified.png npm run e2e`: passed real extension setup, browser action/activeTab grant, actual fixture selection capture, origin/title preview, real `ollama:llama3.2:latest` generation, source-related result, exact downloaded output and password-field refusal. No Chrome APIs or model inference were mocked and captured preview text was not filled manually.
-- The toolbar action is invoked by browser-level CDP with the fixture's tab target. Because the native transient popup is not exposed as a Playwright Page, its identical popup.html is driven in a tab after the real action grant. This does not prove every native-toolbar popup focus/lifetime behavior; manual interactive acceptance is documented in README.
-- The resulting extension UI screenshot was visually inspected. Password refusal left the previously approved preview unchanged and did not expose the fixture password.
-- `npm run package`: verified exact sorted archive entries, no manifest key, LICENSE/NOTICE inclusion and two byte-identical builds. An observed archive hash was e96ac58ba5593d80ae3cbf2426dc764376176b3b5e60d647a04953e2d85e67ae; subsequent source edits intentionally change it.
+- `npm run check`: 14 behavior tests passed, including 10 worker authorization/lifecycle regressions, plus lint and secret scanning. Loaded core-client/worker coverage measured 96.43% lines, 85.03% branches and 82.50% functions.
+- Worker tests verify exact restored document identity, asynchronous restore races, malformed grants, navigation/removal/revoke, no replay after restart, request IDs/limits, cancellation/timeouts and missing native connection errors.
+- `npm run e2e` passed actual extension Setup, genuine browser action/activeTab permission, actual selected-text capture, source preview, real Ollama response, exact downloaded content and password refusal.
+- The same E2E exercised the real SDK → content relay → worker → installed native host → authenticated bridge → Ollama path, including no-approval/missing-host, second origin, iframe rejection, revoke, abort and navigation invalidation.
+- A separate actual HTTPS workspace UI generated through the relay with direct loopback page fetch blocked and an empty/hidden page token field. It used an ephemeral local certificate accepted only in the isolated test profile; ordinary web security was not disabled.
+- Native registration and profile storage stayed under the isolated temporary profile, not the user's real browser directories. The host install was removed on exit.
+- The transient toolbar action is real, but Chrome does not expose that popup as a Playwright Page; the identical popup document is driven in a tab after action permission. Do not infer every native-popup focus/lifetime nuance from this harness.
+- The actual workspace/extension UI screenshots were visually inspected.
+- `npm run package` verified a sorted explicit archive list, required icons/LICENSE/NOTICE, no development manifest key and two identical builds.
 
-Independent review and focused re-review resolved incorrect CDP targeting, async capture assertion races, password refusal propagation, manifest key removal and archive reproducibility. No remaining code blockers were reported.
+Independent security review and focused re-review confirmed identity/token/resource/lifecycle fixes and reported no remaining blockers. Session grants survive ordinary worker idleness with browser-attested identity rechecked; live work is never replayed, and browser/extension restart clears session grants.
 
-The zip is not signed or Chrome Web Store-approved. The source public key is only for unpacked development identity. Native messaging and website-facing browser relay are PLANNED in browser-relay-plan.md, not implemented permissions or message listeners. Development dependency audit was clean with the documented patched ESLint overrides. See repository Actions for live CI status.
+Artifacts are private GitHub tgz/zip releases, not public npm or Chrome Web Store publication. Downloaded release identity can differ from the keyed unpacked source, so Setup displays the actual extension ID and native install command. Signing/notarization or store approval is not claimed. See README and Actions for installation and current release status.
